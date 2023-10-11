@@ -1,12 +1,13 @@
-using PlayFab;
-using PlayFab.ClientModels;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using YG;
+using YG.Utils.LB;
 
 public class NetManager : MonoBehaviour
 {
-    public static SimpleEvent<GetLeaderboardResult> Result = new SimpleEvent<GetLeaderboardResult>();
+    [SerializeField] private string lbName;
+
+    public static SimpleEvent<LBData> Result = new SimpleEvent<LBData>();
 
     private WaitForSeconds waitFor = new WaitForSeconds(30);
 
@@ -14,75 +15,41 @@ public class NetManager : MonoBehaviour
     {
         DontDestroyOnLoad(this);
 
-        Auth();
+        YandexGame.onGetLeaderboard += Result.Invoke;
+
+        StartCoroutine(Awaiter());
     }
 
     private IEnumerator Awaiter()
     {
+        yield return new WaitForSeconds(3);
+
         while (true)
         {
-            UpdateLead();
+            RefreshLead();
 
             yield return waitFor;
         }
     }
 
-    private void Auth()
+    public void RefreshLead()
     {
-        PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
-        {
-            CustomId = DataManager.instance.data.Id,
-            CreateAccount = true
-        },
-        (result) =>
-        {
-            Debug.Log("Playfab login good");
-            StartCoroutine(Awaiter());
-        },
-        (error) => { Debug.Log(error.ErrorMessage); });
-    }
-
-    public void UpdateNick(string val)
-    {
-        if (!PlayFabClientAPI.IsClientLoggedIn()) return;
-
-        PlayFabClientAPI.UpdateUserTitleDisplayName(new UpdateUserTitleDisplayNameRequest
-        {
-            DisplayName = val
-        },
-        result => { },
-        error => Debug.Log(error.GenerateErrorReport()));
-    }
-
-    public void UpdateLead()
-    {
-        PlayFabClientAPI.GetLeaderboard(new GetLeaderboardRequest
-        {
-            StatisticName = "Top",
-            StartPosition = 0,
-            MaxResultsCount = 8
-        },
-        result =>
-        {
-            Result.Invoke(result);
-        },
-        error => Debug.LogError(error.GenerateErrorReport()));
+        YandexGame.GetLeaderboard(lbName, 8, 8, 8, "nonePhoto");
     }
 
     public void UpdateRecord(int val)
     {
-        if (!PlayFabClientAPI.IsClientLoggedIn()) return;
-
-        PlayFabClientAPI.UpdatePlayerStatistics(new UpdatePlayerStatisticsRequest
+        if (!YandexGame.auth)
         {
-            Statistics = new List<StatisticUpdate> {
-            new StatisticUpdate {
-                StatisticName = "Top",
-                Value = val
-            }
+            //YandexGame.AuthDialog();
+            return;
         }
-        },
-        result => { UpdateLead(); },
-        error => Debug.LogError(error.GenerateErrorReport()));
+
+        YandexGame.NewLBScoreTimeConvert(lbName, val);
+    }
+
+    private void OnDestroy()
+    {
+        YandexGame.onGetLeaderboard -= Result.Invoke;
     }
 }

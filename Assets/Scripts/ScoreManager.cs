@@ -1,5 +1,6 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -22,9 +23,11 @@ public class ScoreManager : MonoBehaviour
     {
         if (isEnd) return;
 
+        if (target.transform.localPosition.y < -10) SceneManager.LoadScene(1);
+
         time += Time.deltaTime;
 
-        textTxt.text = $"Height: {(target.localPosition.y - 1.5) * 125:f0}";
-        timeTxt.text = $"Time: {time:f2}";
+        textTxt.text = $"Высота: {(target.localPosition.y - 1.5) * 125:f0}";
+        timeTxt.text = $"Время: {time:f2}";
     }
 }

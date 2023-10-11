@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (transform.localPosition.y < -10) SceneManager.LoadScene(1);
+
         dir = transform.right * Input.GetAxisRaw("Vertical") + transform.forward * -Input.GetAxisRaw("Horizontal");
 
         //dir.x = Input.GetAxisRaw("Vertical");

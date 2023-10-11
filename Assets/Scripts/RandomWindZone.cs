@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RandomWindZone : MonoBehaviour
 {
@@ -13,12 +14,16 @@ public class RandomWindZone : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Rock")) target = other.transform;
+        if (!other.CompareTag("Rock")) return;
+
+        target = other.transform;
+        Events.AudioStart.Invoke();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Rock")) target = null;
+        if (other.CompareTag("Rock")) return;
+        target = null;
     }
 
     private void FixedUpdate()
